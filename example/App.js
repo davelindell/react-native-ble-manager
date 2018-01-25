@@ -50,8 +50,6 @@ export default class App extends Component {
     this.handlerDisconnect = bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral );
     this.handlerUpdate = bleManagerEmitter.addListener('BleManagerDidUpdateValueForCharacteristic', this.handleUpdateValueForCharacteristic );
 
-
-
     if (Platform.OS === 'android' && Platform.Version >= 23) {
         PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((result) => {
             if (result) {
@@ -110,7 +108,7 @@ export default class App extends Component {
   startScan() {
     if (!this.state.scanning) {
       this.setState({peripherals: new Map()});
-      BleManager.scan([], 3, true).then((results) => {
+      BleManager.scan([], 10, true).then((results) => {
         console.log('Scanning...');
         this.setState({scanning:true});
       });
@@ -157,48 +155,48 @@ export default class App extends Component {
 
           setTimeout(() => {
 
-            /* Test read current RSSI value
+            // Test read current RSSI value
             BleManager.retrieveServices(peripheral.id).then((peripheralData) => {
               console.log('Retrieved peripheral services', peripheralData);
 
               BleManager.readRSSI(peripheral.id).then((rssi) => {
                 console.log('Retrieved actual RSSI value', rssi);
               });
-            });*/
+            });
 
             // Test using bleno's pizza example
             // https://github.com/sandeepmistry/bleno/tree/master/examples/pizza
-            BleManager.retrieveServices(peripheral.id).then((peripheralInfo) => {
-              console.log(peripheralInfo);
-              var service = '13333333-3333-3333-3333-333333333337';
-              var bakeCharacteristic = '13333333-3333-3333-3333-333333330003';
-              var crustCharacteristic = '13333333-3333-3333-3333-333333330001';
-
-              setTimeout(() => {
-                BleManager.startNotification(peripheral.id, service, bakeCharacteristic).then(() => {
-                  console.log('Started notification on ' + peripheral.id);
-                  setTimeout(() => {
-                    BleManager.write(peripheral.id, service, crustCharacteristic, [0]).then(() => {
-                      console.log('Writed NORMAL crust');
-                      BleManager.write(peripheral.id, service, bakeCharacteristic, [1,95]).then(() => {
-                        console.log('Writed 351 temperature, the pizza should be BAKED');
-                        /*
-                        var PizzaBakeResult = {
-                          HALF_BAKED: 0,
-                          BAKED:      1,
-                          CRISPY:     2,
-                          BURNT:      3,
-                          ON_FIRE:    4
-                        };*/
-                      });
-                    });
-
-                  }, 500);
-                }).catch((error) => {
-                  console.log('Notification error', error);
-                });
-              }, 200);
-            });
+//            BleManager.retrieveServices(peripheral.id).then((peripheralInfo) => {
+//              console.log(peripheralInfo);
+//              var service = '13333333-3333-3333-3333-333333333337';
+//              var bakeCharacteristic = '13333333-3333-3333-3333-333333330003';
+//              var crustCharacteristic = '13333333-3333-3333-3333-333333330001';
+//
+//              setTimeout(() => {
+//                BleManager.startNotification(peripheral.id, service, bakeCharacteristic).then(() => {
+//                  console.log('Started notification on ' + peripheral.id);
+//                  setTimeout(() => {
+//                    BleManager.write(peripheral.id, service, crustCharacteristic, [0]).then(() => {
+//                      console.log('Writed NORMAL crust');
+//                      BleManager.write(peripheral.id, service, bakeCharacteristic, [1,95]).then(() => {
+//                        console.log('Writed 351 temperature, the pizza should be BAKED');
+//                        /*
+//                        var PizzaBakeResult = {
+//                          HALF_BAKED: 0,
+//                          BAKED:      1,
+//                          CRISPY:     2,
+//                          BURNT:      3,
+//                          ON_FIRE:    4
+//                        };*/
+//                      });
+//                    });
+//
+//                  }, 500);
+//                }).catch((error) => {
+//                  console.log('Notification error', error);
+//                });
+//              }, 200);
+//            });
 
           }, 900);
         }).catch((error) => {
