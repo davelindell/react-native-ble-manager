@@ -1,5 +1,5 @@
 var util = require('util');
-var bleno = require('../..');
+var bleno = require('../');
 
 var DahliaLightingCharacteristic = require('./dahlia-lighting-characteristic');
 

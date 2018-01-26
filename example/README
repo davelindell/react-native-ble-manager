@@ -17,7 +17,9 @@ to send/receive over bluetooth.
 
 run the following
 $ npm install # install required node packages
+$ npm i --save react-native-ble-manager # don't know if this is also necessary, do to be sure
 $ react-native link # link required libraries
+$ react-native upgrade # answer no (n) to all file modifications
 $ npm start # start development server
 $ react-native run-android # start the android app on phone
 $ react-native log-android # view logging from the android app
@@ -43,7 +45,7 @@ $ sudo apt-get install npm
 3. install bleno from npm
 $ sudo npm install bleno
 
-4. copy over the files from ./raspi in this directory 
+4. copy over the files from ./raspi_bleno in this directory 
 to the raspi
 
 5. ssh into the raspi and run the node BLE peripheral program 
