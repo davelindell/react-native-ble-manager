@@ -1,6 +1,13 @@
 Instructions for setting up bluetooth communication for the mobile app and 
 raspi 
 
+Note that these instructions are run with the following versions of software
+npm 4.6.1
+react-native-cli 2.0.1
+react-native 0.52.1
+
+Versions of npm 5+ will not work.
+
 -- setting up the mobile app
 
 Note that this assumes you have already connected a physical
