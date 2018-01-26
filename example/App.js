@@ -29,6 +29,8 @@ export default class App extends Component {
 
     this.state = {
       scanning:false,
+      lighting: 'NO LIGHTING SET',
+      lighting_num: 0,
       peripherals: new Map(),
       appState: ''
     }
@@ -108,7 +110,7 @@ export default class App extends Component {
   startScan() {
     if (!this.state.scanning) {
       this.setState({peripherals: new Map()});
-      BleManager.scan([], 10, true).then((results) => {
+      BleManager.scan([], 3, true).then((results) => {
         console.log('Scanning...');
         this.setState({scanning:true});
       });
@@ -128,6 +130,54 @@ export default class App extends Component {
     });
   }
 
+  clearPeripherals(){
+      this.setState({peripherals: new Map()});
+  } 
+
+  sendCommand(){
+    BleManager.getConnectedPeripherals([]).then((peripheral) => {
+      var connected_peripheral = peripheral[0]
+      console.log(connected_peripheral.id);
+      BleManager.retrieveServices(connected_peripheral.id).then((peripheralInfo) => {
+        var service = '13333333-3333-3333-3333-333333333337';
+        var sceneLightingCharacteristic = '13333333-3333-3333-3333-333333330001';
+
+        var SCENES = {
+            0: 'NORMAL',
+            1: 'MOVIE',
+            2: 'SLEEP',
+        };
+ 
+        setTimeout(() => {
+            var write_value = this.state.lighting_num;
+            BleManager.write(connected_peripheral.id, service, sceneLightingCharacteristic, [write_value]).then(() => {
+              console.log('Wrote ', SCENES[write_value], 'lighting');
+              BleManager.read(connected_peripheral.id, service, sceneLightingCharacteristic).then((read_value) => {
+                var scene_label = ''
+                switch (read_value[0]) {
+                  case 0:
+                    scene_label = 'NORMAL';
+                    break;
+                  case 1:
+                    scene_label = 'MOVIE';
+                    break;
+                  case 2:
+                    scene_label = 'SLEEP';
+                    break;
+                }
+                console.log('Pi set to', scene_label);
+                this.setState({lighting: scene_label});
+                this.setState({lighting_num: (write_value+1) % 3})
+           });
+          });
+        }, 500);
+      });
+    }).catch((error) => {
+      console.log('Notification error', error);
+    });
+  }
+
+
   handleDiscoverPeripheral(peripheral){
     var peripherals = this.state.peripherals;
     if (!peripherals.has(peripheral.id)){
@@ -141,6 +191,7 @@ export default class App extends Component {
     if (peripheral){
       if (peripheral.connected){
         BleManager.disconnect(peripheral.id);
+        this.state.lighting = 'NO LIGHTING SET';
       }else{
         BleManager.connect(peripheral.id).then(() => {
           let peripherals = this.state.peripherals;
@@ -151,18 +202,18 @@ export default class App extends Component {
             this.setState({peripherals});
           }
           console.log('Connected to ' + peripheral.id);
-
+          this.state.connected_peripheral = peripheral
 
           setTimeout(() => {
 
             // Test read current RSSI value
-            BleManager.retrieveServices(peripheral.id).then((peripheralData) => {
-              console.log('Retrieved peripheral services', peripheralData);
-
-              BleManager.readRSSI(peripheral.id).then((rssi) => {
-                console.log('Retrieved actual RSSI value', rssi);
-              });
-            });
+//            BleManager.retrieveServices(peripheral.id).then((peripheralData) => {
+//              console.log('Retrieved peripheral services', peripheralData);
+//
+//              BleManager.readRSSI(peripheral.id).then((rssi) => {
+//                console.log('Retrieved actual RSSI value', rssi);
+//              });
+//            });
 
             // Test using bleno's pizza example
             // https://github.com/sandeepmistry/bleno/tree/master/examples/pizza
@@ -209,7 +260,7 @@ export default class App extends Component {
   render() {
     const list = Array.from(this.state.peripherals.values());
     const dataSource = ds.cloneWithRows(list);
-
+    const scene_label = this.state.lighting;
 
     return (
       <View style={styles.container}>
@@ -219,6 +270,10 @@ export default class App extends Component {
         <TouchableHighlight style={{marginTop: 0,margin: 20, padding:20, backgroundColor:'#ccc'}} onPress={() => this.retrieveConnected() }>
           <Text>Retrieve connected peripherals</Text>
         </TouchableHighlight>
+        <TouchableHighlight style={{marginTop: 0,margin: 20, padding:20, backgroundColor:'#ccc'}} onPress={() => this.sendCommand() }>
+          <Text>Send Command</Text>
+        </TouchableHighlight>
+        <Text style={{fontSize: 12, textAlign: 'center', color: '#333333', padding: 10}}>{scene_label}</Text>
         <ScrollView style={styles.scroll}>
           {(list.length == 0) &&
             <View style={{flex:1, margin: 20}}>
